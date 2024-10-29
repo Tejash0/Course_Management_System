@@ -10,7 +10,7 @@ public class DatabaseManager {
 	private Connection conn;
 
 	private DatabaseManager(String path, String username, String password) throws SQLException {
-		this.conn = DriverManager.getConnection(path, username, password);
+		this.conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/course_management_system", "root", "Tejash");
 		System.out.println("Connected to database");
 		createDatabase("course_management_system");
 		String query = "USE course_management_system";

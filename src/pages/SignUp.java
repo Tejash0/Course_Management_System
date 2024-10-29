@@ -34,7 +34,7 @@ public class SignUp extends JPanel {
 	public SignUp(JFrame frame, CustomImage logo) {
 
 		ImageIcon signupImg = new ImageIcon(getClass().getResource("/resources/signup_image.png"));
-		Image signupImage = signupImg.getImage().getScaledInstance(1100, 708, java.awt.Image.SCALE_SMOOTH);
+		Image signupImage = signupImg.getImage().getScaledInstance(1000, 708, java.awt.Image.SCALE_SMOOTH);
 		signupImg = new ImageIcon(signupImage);
 
 		JPanel signup = new JPanel();
