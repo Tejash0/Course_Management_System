@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.sql.Connection;
 
 import models.user.Student;
 
@@ -287,22 +288,52 @@ public class DataManager {
     }
 
     public static void deleteStudent(String id) throws SQLException {
-        String sql = "SELECT auth_id FROM students WHERE student_id = ?";
-        PreparedStatement ps = db.getConnection().prepareStatement(sql);
-        ps.setInt(1, Integer.parseInt(id));
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        int authId = rs.getInt("auth_id");
+        Connection conn = db.getConnection();
+        conn.setAutoCommit(false);
+        try {
+            int studentId = Integer.parseInt(id);
 
-        sql = "DELETE FROM students WHERE student_id = ?";
-        ps = db.getConnection().prepareStatement(sql);
-        ps.setInt(1, Integer.parseInt(id));
-        ps.executeUpdate();
+            // Get auth_id
+            String sql = "SELECT auth_id FROM students WHERE student_id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, studentId);
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                throw new SQLException("Student not found");
+            }
+            int authId = rs.getInt("auth_id");
 
-        sql = "DELETE FROM auth WHERE id = ?";
-        ps = db.getConnection().prepareStatement(sql);
-        ps.setInt(1, authId);
-        ps.executeUpdate();
+            // Delete from results table
+            sql = "DELETE FROM results WHERE student_id = ?";
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, studentId);
+            ps.executeUpdate();
+
+            // Delete from enrollments table
+            sql = "DELETE FROM enrollments WHERE student_id = ?";
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, studentId);
+            ps.executeUpdate();
+
+            // Delete from students table
+            sql = "DELETE FROM students WHERE student_id = ?";
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, studentId);
+            ps.executeUpdate();
+
+            // Delete from auth table
+            sql = "DELETE FROM auth WHERE id = ?";
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, authId);
+            ps.executeUpdate();
+
+            conn.commit();
+        } catch (SQLException e) {
+            conn.rollback();
+            throw e;
+        } finally {
+            conn.setAutoCommit(true);
+        }
     }
 
     public static void markStudent(String studentId, String moduleId, String marks) throws SQLException {
